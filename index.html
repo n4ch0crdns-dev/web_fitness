@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora Fit - Rutinas y Progreso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js: API/Librería gratuita para gráficos estadísticos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container { position: relative; height: 280px; width: 100%; }
+    </style>
+</head>
+<body class="bg-[#f4f1ea] text-gray-800 pb-12 font-sans">
+
+    <!-- Navegación Principal -->
+    <nav class="bg-[#2c4c3b] text-[#e8ecd7] p-4 shadow-lg flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">💪 Bitácora Fit</h1>
+        <div>
+            <button id="btnLogin" class="bg-[#1f362a] px-4 py-2 rounded-lg hover:bg-[#15251d] text-sm font-semibold transition">Admin</button>
+            <button id="btnLogout" class="hidden bg-red-700 px-4 py-2 rounded-lg hover:bg-red-600 text-sm font-semibold transition">Salir</button>
+        </div>
+    </nav>
+
+    <!-- Banner Superior -->
+    <header class="text-center py-6 px-4 bg-white shadow-sm border-b border-[#e5e0d8]">
+        <h2 class="text-2xl font-bold text-[#2c4c3b] mb-2">Entrenamiento y Evolución</h2>
+        <p class="text-gray-600 text-sm max-w-xl mx-auto">Consulta tus rutinas, registra tus cargas o tiempos en cada sesión y visualiza tu progreso acumulado.</p>
+    </header>
+
+    <div class="max-w-6xl mx-auto p-4 space-y-6">
+
+        <!-- Panel de Administrador (Solo visible al iniciar sesión) -->
+        <div id="adminPanel" class="hidden bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#2c4c3b] grid md:grid-cols-3 gap-8">
+            
+            <!-- Formulario CRUD de Rutinas -->
+            <div class="md:col-span-2">
+                <h2 id="formTitle" class="text-xl font-bold mb-4 text-[#2c4c3b]">🏋️ Crear / Administrar Rutina</h2>
+                <form id="routineForm" class="space-y-4">
+                    <input type="hidden" id="editRoutineId" value="">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="routineName" placeholder="Nombre (Ej: Press de Banca / HIIT 20m)" class="p-2 bg-gray-50 border rounded w-full" required>
+                        <select id="routineCategory" class="p-2 bg-gray-50 border rounded w-full" required></select>
+                    </div>
+                    <textarea id="routineDesc" rows="3" placeholder="Descripción, series, repeticiones y técnica..." class="w-full p-2 bg-gray-50 border rounded" required></textarea>
+                    <input type="url" id="routineImage" placeholder="URL directa de la imagen (Ej: enlace directo de ImgBB)" class="w-full p-2 bg-gray-50 border rounded" required>
+                    <div class="flex gap-2">
+                        <button type="submit" id="btnSubmitForm" class="bg-[#2c4c3b] text-white px-4 py-2 rounded w-full font-bold hover:bg-[#1f362a] transition">Guardar Rutina</button>
+                        <button type="button" id="btnCancelEdit" class="hidden bg-gray-500 text-white px-4 py-2 rounded font-bold">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Gestión de Categorías -->
+            <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-6">
+                <h2 class="text-lg font-bold mb-4 text-[#2c4c3b]">🏷️ Grupos / Categorías</h2>
+                <form id="catForm" class="flex gap-2 mb-4">
+                    <input type="text" id="catName" placeholder="Ej: Pecho, Piernas, Cardio" class="p-2 bg-gray-50 border rounded w-full text-sm" required>
+                    <button type="submit" class="bg-[#2c4c3b] text-white px-3 py-2 rounded font-bold text-sm">+</button>
+                </form>
+                <ul id="adminCatList" class="space-y-2 text-sm max-h-48 overflow-y-auto pr-2"></ul>
+            </div>
+        </div>
+
+        <!-- Sección de Registro Público de Avances y Estadísticas -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Formulario Público: Registrar Avance -->
+            <div id="logSection" class="bg-white p-6 rounded-xl shadow-sm border border-[#e5e0d8] flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-[#2c4c3b] mb-1">📝 Registrar Avance</h3>
+                    <p class="text-xs text-gray-500 mb-4">Anota tus resultados del día (disponible sin entrar a Admin).</p>
+                    
+                    <form id="progressForm" class="space-y-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-600">Rutina o Ejercicio</label>
+                            <select id="logRoutineSelect" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                <option value="">Cargando rutinas...</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-gray-600">Peso Máx (kg)</label>
+                                <input type="number" id="logWeight" step="0.5" min="0" placeholder="Ej: 60" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-600">Reps / Minutos</label>
+                                <input type="number" id="logReps" min="1" placeholder="Ej: 12" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-600">Fecha</label>
+                            <input type="date" id="logDate" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-600">Notas de sensación (Opcional)</label>
+                            <input type="text" id="logNotes" placeholder="Ej: Subí 5 kg, buena técnica" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1">
+                        </div>
+                        <button type="submit" class="bg-[#2c4c3b] text-white px-4 py-2.5 rounded-lg w-full font-bold text-sm hover:bg-[#1f362a] transition shadow">
+                            + Guardar Resultado
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Panel de Estadísticas y Gráfico (Chart.js) -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-[#e5e0d8] flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-[#2c4c3b]">📊 Estadísticas de Progreso</h3>
+                            <p class="text-xs text-gray-500">Evolución histórica de carga y rendimiento</p>
+                        </div>
+                        <select id="chartRoutineFilter" class="p-2 bg-[#f4f1ea] border border-[#e5e0d8] rounded-lg text-xs font-bold text-[#2c4c3b]">
+                            <option value="TODAS">Todas las rutinas</option>
+                        </select>
+                    </div>
+
+                    <!-- Tarjetas Resumen (KPIs) -->
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="bg-[#f4f1ea] p-3 rounded-lg border border-[#e5e0d8] text-center">
+                            <span class="block text-[11px] font-bold text-gray-500 uppercase">Sesiones</span>
+                            <span id="statTotalSessions" class="text-xl font-extrabold text-[#2c4c3b]">0</span>
+                        </div>
+                        <div class="bg-[#e8ecd7] p-3 rounded-lg border border-[#c1cc99] text-center">
+                            <span class="block text-[11px] font-bold text-[#2c4c3b] uppercase">Récord Peso</span>
+                            <span id="statMaxWeight" class="text-xl font-extrabold text-[#2c4c3b]">0 kg</span>
+                        </div>
+                        <div class="bg-[#f4f1ea] p-3 rounded-lg border border-[#e5e0d8] text-center">
+                            <span class="block text-[11px] font-bold text-gray-500 uppercase">Total Reps/Min</span>
+                            <span id="statTotalReps" class="text-xl font-extrabold text-[#2c4c3b]">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Lienzo del Gráfico -->
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Últimos 4 registros -->
+                <div class="mt-4 pt-3 border-t border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Últimos registros guardados</h4>
+                    <div id="recentLogsList" class="space-y-1.5 max-h-32 overflow-y-auto text-xs"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filtros Dinámicos de Rutinas -->
+        <section id="filterContainer" class="flex flex-wrap gap-2 justify-center items-center bg-white p-4 rounded-xl shadow-sm border border-[#e5e0d8]">
+            <span class="text-sm font-bold text-gray-500 mr-2">Rutinas:</span>
+        </section>
+
+        <!-- Contenedor de Tarjetas de Rutinas -->
+        <main id="routinesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+
+        // CREDENCIALES DE FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjmn4GDlhtxVhy4WgFDawiYhJ81-7dpEE",
+            authDomain: "fitness-base-26e39.firebaseapp.com",
+            projectId: "fitness-base-26e39",
+            storageBucket: "fitness-base-26e39.firebasestorage.app",
+            messagingSenderId: "910905175988",
+            appId: "1:910905175988:web:036383b5980cd34c8a0ce1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let isAdmin = false;
+        let allRoutines = [];
+        let allCategories = [];
+        let allLogs = [];
+        let currentFilter = 'Todas';
+        let progressChartInstance = null;
+
+        // Poner fecha de hoy por defecto en el formulario de avances
+        document.getElementById('logDate').valueAsDate = new Date();
+
+        // ---------------- AUTENTICACIÓN ----------------
+        document.getElementById('btnLogin').addEventListener('click', () => {
+            const email = prompt("Correo Admin:");
+            const password = prompt("Contraseña:");
+            if (email && password) signInWithEmailAndPassword(auth, email, password).catch(e => alert("Error: " + e.message));
+        });
+        document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            isAdmin = !!user;
+            document.getElementById('btnLogin').style.display = user ? 'none' : 'block';
+            document.getElementById('btnLogout').style.display = user ? 'block' : 'none';
+            document.getElementById('adminPanel').style.display = user ? 'grid' : 'none';
+            renderRoutines();
+            renderCategories();
+            renderStatsAndChart();
+        });
+
+        // ---------------- CATEGORÍAS (CRUD ADMIN) ----------------
+        onSnapshot(collection(db, "categorias_fit"), (snapshot) => {
+            allCategories = [];
+            snapshot.forEach(doc => allCategories.push({ id: doc.id, nombre: doc.data().nombre }));
+            allCategories.sort((a,b) => a.nombre.localeCompare(b.nombre));
+            renderCategories();
+            renderRoutines();
+        });
+
+        document.getElementById('catForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!isAdmin) return;
+            const input = document.getElementById('catName');
+            await addDoc(collection(db, "categorias_fit"), { nombre: input.value });
+            input.value = "";
+        });
+
+        window.deleteCategory = async function(id) {
+            if(confirm("¿Eliminar esta categoría?")) await deleteDoc(doc(db, "categorias_fit", id));
+        };
+
+        function renderCategories() {
+            const select = document.getElementById('routineCategory');
+            select.innerHTML = '<option value="">Selecciona grupo muscular / tipo...</option>';
+            
+            const filterContainer = document.getElementById('filterContainer');
+            filterContainer.innerHTML = `<span class="text-sm font-bold text-gray-500 mr-2">Rutinas:</span>
+                <button onclick="filterCategory('Todas')" class="${currentFilter === 'Todas' ? 'bg-[#2c4c3b] text-white' : 'bg-gray-200 text-gray-700'} px-3 py-1 rounded-full text-sm font-semibold transition">Todas</button>`;
+            
+            const adminList = document.getElementById('adminCatList');
+            adminList.innerHTML = '';
+
+            allCategories.forEach(c => {
+                select.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
+                const isSelected = currentFilter === c.nombre ? 'bg-[#2c4c3b] text-white' : 'bg-gray-200 text-gray-700 hover:bg-[#e8ecd7]';
+                filterContainer.innerHTML += `<button onclick="filterCategory('${c.nombre}')" class="${isSelected} px-3 py-1 rounded-full text-sm font-semibold transition">${c.nombre}</button>`;
+                if(isAdmin) {
+                    adminList.innerHTML += `<li class="flex justify-between items-center bg-gray-50 p-2 rounded border">
+                        ${c.nombre} <button onclick="deleteCategory('${c.id}')" class="text-red-600 font-bold hover:text-red-800">X</button>
+                    </li>`;
+                }
+            });
+        }
+
+        window.filterCategory = function(cat) {
+            currentFilter = cat;
+            renderCategories();
+            renderRoutines();
+        };
+
+        // ---------------- RUTINAS (CRUD ADMIN) ----------------
+        document.getElementById('routineForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!isAdmin) return;
+            const editId = document.getElementById('editRoutineId').value;
+            const data = {
+                nombre: document.getElementById('routineName').value,
+                categoria: document.getElementById('routineCategory').value,
+                descripcion: document.getElementById('routineDesc').value,
+                imagen: document.getElementById('routineImage').value
+            };
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "rutinas", editId), data);
+                } else {
+                    data.fecha = new Date();
+                    await addDoc(collection(db, "rutinas"), data);
+                }
+                resetForm();
+            } catch (error) { alert("Error: " + error.message); }
+        });
+
+        document.getElementById('btnCancelEdit').addEventListener('click', resetForm);
+
+        function resetForm() {
+            document.getElementById('routineForm').reset();
+            document.getElementById('editRoutineId').value = "";
+            document.getElementById('formTitle').innerText = "🏋️ Crear / Administrar Rutina";
+            document.getElementById('btnSubmitForm').innerText = "Guardar Rutina";
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+        }
+
+        onSnapshot(query(collection(db, "rutinas"), orderBy("fecha", "desc")), (snapshot) => {
+            allRoutines = [];
+            snapshot.forEach(docSnap => allRoutines.push({ id: docSnap.id, ...docSnap.data() }));
+            updateRoutineDropdowns();
+            renderRoutines();
+        });
+
+        function updateRoutineDropdowns() {
+            const logSelect = document.getElementById('logRoutineSelect');
+            const chartFilter = document.getElementById('chartRoutineFilter');
+            const prevChartVal = chartFilter.value;
+
+            logSelect.innerHTML = '<option value="">Selecciona una rutina...</option>';
+            chartFilter.innerHTML = '<option value="TODAS">Todas las rutinas</option>';
+
+            allRoutines.forEach(r => {
+                logSelect.innerHTML += `<option value="${r.nombre}">${r.nombre}</option>`;
+                chartFilter.innerHTML += `<option value="${r.nombre}">${r.nombre}</option>`;
+            });
+            logSelect.innerHTML += `<option value="Entrenamiento Libre">Entrenamiento Libre</option>`;
+
+            if ([...chartFilter.options].some(o => o.value === prevChartVal)) {
+                chartFilter.value = prevChartVal;
+            }
+        }
+
+        function renderRoutines() {
+            const container = document.getElementById('routinesContainer');
+            container.innerHTML = '';
+
+            const filtered = currentFilter === 'Todas' ? allRoutines : allRoutines.filter(r => r.categoria === currentFilter);
+
+            filtered.forEach((routine) => {
+                let adminBtns = isAdmin ? `
+                    <div class="flex gap-3 mt-3 pt-2 border-t border-[#e5e0d8]">
+                        <button onclick="editRoutine('${routine.id}')" class="text-blue-600 text-xs font-bold hover:underline">Editar</button>
+                        <button onclick="deleteRoutine('${routine.id}')" class="text-red-600 text-xs font-bold hover:underline">Eliminar</button>
+                    </div>` : "";
+
+                container.innerHTML += `
+                    <article class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border border-[#e5e0d8]">
+                        <div class="relative h-52">
+                            <img src="${routine.imagen}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x200?text=Rutina+Fit'">
+                            <button onclick="quickLog('${routine.nombre}')" class="absolute bottom-3 right-3 bg-[#2c4c3b] text-white px-3 py-2 rounded-lg text-xs font-bold shadow-lg hover:bg-[#1f362a] transition flex items-center gap-1">
+                                ⚡ Registrar avance
+                            </button>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col">
+                            <div class="mb-2">
+                                <span class="bg-[#e8ecd7] text-[#2c4c3b] px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold">${routine.categoria || 'General'}</span>
+                                <h3 class="text-lg font-bold text-[#2c4c3b] leading-tight mt-1">${routine.nombre}</h3>
+                            </div>
+                            <p class="text-gray-600 text-sm whitespace-pre-line flex-1">${routine.descripcion}</p>
+                            ${adminBtns}
+                        </div>
+                    </article>`;
+            });
+        }
+
+        // Botón rápido en tarjeta para preseleccionar rutina en el formulario de avances
+        window.quickLog = function(routineName) {
+            const select = document.getElementById('logRoutineSelect');
+            select.value = routineName;
+            document.getElementById('logSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('logWeight').focus();
+        };
+
+        window.editRoutine = function(id) {
+            const r = allRoutines.find(item => item.id === id);
+            if (!r) return;
+            document.getElementById('editRoutineId').value = r.id;
+            document.getElementById('routineName').value = r.nombre;
+            setTimeout(() => { document.getElementById('routineCategory').value = r.categoria; }, 50);
+            document.getElementById('routineDesc').value = r.descripcion;
+            document.getElementById('routineImage').value = r.imagen;
+            document.getElementById('formTitle').innerText = "✏️ Editar Rutina";
+            document.getElementById('btnSubmitForm').innerText = "Actualizar Rutina";
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+            window.scrollTo({ top: document.getElementById('adminPanel').offsetTop - 20, behavior: 'smooth' });
+        };
+
+        window.deleteRoutine = async function(id) {
+            if (confirm("¿Eliminar esta rutina?")) await deleteDoc(doc(db, "rutinas", id));
+        };
+
+        // ---------------- REGISTRO DE AVANCES Y ESTADÍSTICAS ----------------
+        document.getElementById('progressForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                rutina: document.getElementById('logRoutineSelect').value,
+                peso: parseFloat(document.getElementById('logWeight').value),
+                reps: parseInt(document.getElementById('logReps').value),
+                fechaStr: document.getElementById('logDate').value,
+                notas: document.getElementById('logNotes').value || "",
+                creadoEn: new Date()
+            };
+
+            try {
+                await addDoc(collection(db, "avances"), data);
+                document.getElementById('logWeight').value = "";
+                document.getElementById('logReps').value = "";
+                document.getElementById('logNotes').value = "";
+            } catch (error) {
+                alert("Error al guardar avance: " + error.message);
+            }
+        });
+
+        window.deleteLog = async function(id) {
+            if (confirm("¿Eliminar este registro de avance?")) {
+                await deleteDoc(doc(db, "avances", id));
+            }
+        };
+
+        onSnapshot(query(collection(db, "avances"), orderBy("fechaStr", "asc")), (snapshot) => {
+            allLogs = [];
+            snapshot.forEach(docSnap => allLogs.push({ id: docSnap.id, ...docSnap.data() }));
+            renderStatsAndChart();
+        });
+
+        document.getElementById('chartRoutineFilter').addEventListener('change', renderStatsAndChart);
+
+        function renderStatsAndChart() {
+            const selectedRoutine = document.getElementById('chartRoutineFilter').value;
+            const filteredLogs = selectedRoutine === 'TODAS' 
+                ? allLogs 
+                : allLogs.filter(l => l.rutina === selectedRoutine);
+
+            // 1. Calcular KPIs
+            const totalSessions = filteredLogs.length;
+            const maxWeight = filteredLogs.reduce((max, item) => item.peso > max ? item.peso : max, 0);
+            const totalReps = filteredLogs.reduce((sum, item) => sum + (item.reps || 0), 0);
+
+            document.getElementById('statTotalSessions').innerText = totalSessions;
+            document.getElementById('statMaxWeight').innerText = `${maxWeight} kg`;
+            document.getElementById('statTotalReps').innerText = totalReps;
+
+            // 2. Renderizar lista de últimos registros (orden inverso: más reciente arriba)
+            const recentList = document.getElementById('recentLogsList');
+            recentList.innerHTML = '';
+            const reversed = [...filteredLogs].reverse().slice(0, 8);
+
+            if (reversed.length === 0) {
+                recentList.innerHTML = '<p class="text-gray-400 italic">Aún no hay registros para esta selección.</p>';
+            } else {
+                reversed.forEach(item => {
+                    const delBtn = isAdmin 
+                        ? `<button onclick="deleteLog('${item.id}')" class="text-red-500 font-bold ml-2 hover:underline">X</button>` 
+                        : '';
+                    recentList.innerHTML += `
+                        <div class="flex justify-between items-center bg-gray-50 px-3 py-1.5 rounded border border-gray-200">
+                            <div>
+                                <span class="font-bold text-[#2c4c3b]">${item.fechaStr}</span> · 
+                                <span class="font-semibold">${item.rutina}</span>
+                                ${item.notas ? `<span class="text-gray-500 italic">(${item.notas})</span>` : ''}
+                            </div>
+                            <div class="font-bold text-gray-700 whitespace-nowrap">
+                                ${item.peso} kg × ${item.reps} ${delBtn}
+                            </div>
+                        </div>`;
+                });
+            }
+
+            // 3. Dibujar / Actualizar Gráfico con Chart.js
+            const labels = filteredLogs.map(l => `${l.fechaStr} (${l.rutina.substring(0, 12)})`);
+            const weightsData = filteredLogs.map(l => l.peso);
+            const repsData = filteredLogs.map(l => l.reps);
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            if (progressChartInstance) {
+                progressChartInstance.destroy();
+            }
+
+            progressChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Peso (kg)',
+                            data: weightsData,
+                            borderColor: '#2c4c3b',
+                            backgroundColor: 'rgba(44, 76, 59, 0.15)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Reps / Minutos',
+                            data: repsData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 10 }, maxRotation: 30 } },
+                        y: { beginAtZero: true, ticks: { font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
