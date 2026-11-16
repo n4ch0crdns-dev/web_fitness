@@ -3,161 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitácora Fit - Rutinas y Progreso</title>
+    <title>Bitácora Fit - Sebastián & Manuela</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js: API/Librería gratuita para gráficos estadísticos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Variables dinámicas por perfil */
+        :root {
+            --bg-page: #ecfeff;
+            --primary: #0e7490;
+            --primary-dark: #155e75;
+            --primary-light: #cffafe;
+            --primary-border: #67e8f9;
+            --nav-text: #ecfeff;
+            --chart-line: #0891b2;
+            --chart-fill: rgba(8, 145, 178, 0.15);
+        }
+
+        body.theme-manuela {
+            --bg-page: #faf5ff;
+            --primary: #7e22ce;
+            --primary-dark: #6b21a8;
+            --primary-light: #f3e8ff;
+            --primary-border: #d8b4fe;
+            --nav-text: #faf5ff;
+            --chart-line: #9333ea;
+            --chart-fill: rgba(147, 51, 234, 0.15);
+        }
+
+        body { background-color: var(--bg-page); transition: background-color 0.3s ease; }
+        .bg-theme-primary { background-color: var(--primary); }
+        .hover-theme-dark:hover { background-color: var(--primary-dark); }
+        .bg-theme-dark { background-color: var(--primary-dark); }
+        .bg-theme-light { background-color: var(--primary-light); }
+        .text-theme-primary { color: var(--primary); }
+        .text-theme-nav { color: var(--nav-text); }
+        .border-theme-primary { border-color: var(--primary); }
+        .border-theme-light { border-color: var(--primary-border); }
+
         .chart-container { position: relative; height: 280px; width: 100%; }
     </style>
 </head>
-<body class="bg-[#f4f1ea] text-gray-800 pb-12 font-sans">
+<body class="text-gray-800 pb-12 font-sans">
 
-    <!-- Navegación Principal -->
-    <nav class="bg-[#2c4c3b] text-[#e8ecd7] p-4 shadow-lg flex justify-between items-center sticky top-0 z-50">
-        <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">💪 Bitácora Fit</h1>
-        <div>
-            <button id="btnLogin" class="bg-[#1f362a] px-4 py-2 rounded-lg hover:bg-[#15251d] text-sm font-semibold transition">Admin</button>
-            <button id="btnLogout" class="hidden bg-red-700 px-4 py-2 rounded-lg hover:bg-red-600 text-sm font-semibold transition">Salir</button>
-        </div>
-    </nav>
+    <!-- PANTALLA DE SELECCIÓN DE PERFIL (Antes de entrar) -->
+    <div id="profileSelectorScreen" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 text-center border border-gray-100">
+            <span class="text-4xl mb-2 block">🏋️‍♂️🏋️‍♀️</span>
+            <h1 class="text-2xl font-extrabold text-gray-800 mb-2">¿Quién entrena hoy?</h1>
+            <p class="text-sm text-gray-500 mb-8">Selecciona tu perfil para cargar tus rutinas, colores y estadísticas personales.</p>
 
-    <!-- Banner Superior -->
-    <header class="text-center py-6 px-4 bg-white shadow-sm border-b border-[#e5e0d8]">
-        <h2 class="text-2xl font-bold text-[#2c4c3b] mb-2">Entrenamiento y Evolución</h2>
-        <p class="text-gray-600 text-sm max-w-xl mx-auto">Consulta tus rutinas, registra tus cargas o tiempos en cada sesión y visualiza tu progreso acumulado.</p>
-    </header>
-
-    <div class="max-w-6xl mx-auto p-4 space-y-6">
-
-        <!-- Panel de Administrador (Solo visible al iniciar sesión) -->
-        <div id="adminPanel" class="hidden bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#2c4c3b] grid md:grid-cols-3 gap-8">
-            
-            <!-- Formulario CRUD de Rutinas -->
-            <div class="md:col-span-2">
-                <h2 id="formTitle" class="text-xl font-bold mb-4 text-[#2c4c3b]">🏋️ Crear / Administrar Rutina</h2>
-                <form id="routineForm" class="space-y-4">
-                    <input type="hidden" id="editRoutineId" value="">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="routineName" placeholder="Nombre (Ej: Press de Banca / HIIT 20m)" class="p-2 bg-gray-50 border rounded w-full" required>
-                        <select id="routineCategory" class="p-2 bg-gray-50 border rounded w-full" required></select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Botón Modo Sebastián -->
+                <button onclick="selectProfile('sebastian')" class="group p-6 rounded-xl border-2 border-cyan-200 bg-cyan-50/60 hover:bg-cyan-600 hover:border-cyan-600 transition-all duration-200 flex flex-col items-center shadow-sm">
+                    <div class="w-14 h-14 rounded-full bg-cyan-600 text-white group-hover:bg-white group-hover:text-cyan-700 flex items-center justify-center text-2xl font-bold mb-3 transition">
+                        S
                     </div>
-                    <textarea id="routineDesc" rows="3" placeholder="Descripción, series, repeticiones y técnica..." class="w-full p-2 bg-gray-50 border rounded" required></textarea>
-                    <input type="url" id="routineImage" placeholder="URL directa de la imagen (Ej: enlace directo de ImgBB)" class="w-full p-2 bg-gray-50 border rounded" required>
-                    <div class="flex gap-2">
-                        <button type="submit" id="btnSubmitForm" class="bg-[#2c4c3b] text-white px-4 py-2 rounded w-full font-bold hover:bg-[#1f362a] transition">Guardar Rutina</button>
-                        <button type="button" id="btnCancelEdit" class="hidden bg-gray-500 text-white px-4 py-2 rounded font-bold">Cancelar</button>
-                    </div>
-                </form>
-            </div>
+                    <span class="text-lg font-bold text-cyan-900 group-hover:text-white">Modo Sebastián</span>
+                    <span class="text-xs text-cyan-700 group-hover:text-cyan-100 mt-1">Estilo Cian · Datos propios</span>
+                </button>
 
-            <!-- Gestión de Categorías -->
-            <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-6">
-                <h2 class="text-lg font-bold mb-4 text-[#2c4c3b]">🏷️ Grupos / Categorías</h2>
-                <form id="catForm" class="flex gap-2 mb-4">
-                    <input type="text" id="catName" placeholder="Ej: Pecho, Piernas, Cardio" class="p-2 bg-gray-50 border rounded w-full text-sm" required>
-                    <button type="submit" class="bg-[#2c4c3b] text-white px-3 py-2 rounded font-bold text-sm">+</button>
-                </form>
-                <ul id="adminCatList" class="space-y-2 text-sm max-h-48 overflow-y-auto pr-2"></ul>
+                <!-- Botón Modo Manuela -->
+                <button onclick="selectProfile('manuela')" class="group p-6 rounded-xl border-2 border-purple-200 bg-purple-50/70 hover:bg-purple-600 hover:border-purple-600 transition-all duration-200 flex flex-col items-center shadow-sm">
+                    <div class="w-14 h-14 rounded-full bg-purple-500 text-white group-hover:bg-white group-hover:text-purple-700 flex items-center justify-center text-2xl font-bold mb-3 transition">
+                        M
+                    </div>
+                    <span class="text-lg font-bold text-purple-900 group-hover:text-white">Modo Manuela</span>
+                    <span class="text-xs text-purple-700 group-hover:text-purple-100 mt-1">Morado Pastel · Datos propios</span>
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Sección de Registro Público de Avances y Estadísticas -->
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Formulario Público: Registrar Avance -->
-            <div id="logSection" class="bg-white p-6 rounded-xl shadow-sm border border-[#e5e0d8] flex flex-col justify-between">
-                <div>
-                    <h3 class="text-lg font-bold text-[#2c4c3b] mb-1">📝 Registrar Avance</h3>
-                    <p class="text-xs text-gray-500 mb-4">Anota tus resultados del día (disponible sin entrar a Admin).</p>
-                    
-                    <form id="progressForm" class="space-y-3">
-                        <div>
-                            <label class="text-xs font-bold text-gray-600">Rutina o Ejercicio</label>
-                            <select id="logRoutineSelect" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
-                                <option value="">Cargando rutinas...</option>
-                            </select>
+    <!-- CONTENIDO PRINCIPAL DE LA APP -->
+    <div id="mainAppContent" class="hidden">
+        <!-- Navegación Principal -->
+        <nav class="bg-theme-primary text-theme-nav p-4 shadow-lg flex flex-wrap justify-between items-center gap-2 sticky top-0 z-40 transition-colors">
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">💪 Bitácora Fit</h1>
+                <span id="activeProfileBadge" class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="switchProfileModal()" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded-lg text-xs font-semibold transition">
+                    🔄 Cambiar Perfil
+                </button>
+                <button id="btnLogin" class="bg-theme-dark px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-90">Admin</button>
+                <button id="btnLogout" class="hidden bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-semibold transition">Salir</button>
+            </div>
+        </nav>
+
+        <!-- Banner Superior -->
+        <header class="text-center py-6 px-4 bg-white shadow-sm border-b border-gray-200">
+            <h2 id="headerGreeting" class="text-2xl font-bold text-theme-primary mb-1">Entrenamiento y Evolución</h2>
+            <p class="text-gray-600 text-sm max-w-xl mx-auto">Tus rutinas, registros de carga y estadísticas están aislados en este perfil.</p>
+        </header>
+
+        <div class="max-w-6xl mx-auto p-4 space-y-6">
+
+            <!-- Panel de Administrador (Solo visible al iniciar sesión) -->
+            <div id="adminPanel" class="hidden bg-white p-6 rounded-xl shadow-lg border-l-4 border-theme-primary grid md:grid-cols-3 gap-8">
+                
+                <!-- Formulario CRUD de Rutinas -->
+                <div class="md:col-span-2">
+                    <h2 id="formTitle" class="text-xl font-bold mb-4 text-theme-primary">🏋️ Crear / Administrar Rutina</h2>
+                    <form id="routineForm" class="space-y-4">
+                        <input type="hidden" id="editRoutineId" value="">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="routineName" placeholder="Nombre (Ej: Press de Banca / Sentadilla)" class="p-2 bg-gray-50 border rounded w-full" required>
+                            <select id="routineCategory" class="p-2 bg-gray-50 border rounded w-full" required></select>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-xs font-bold text-gray-600">Peso Máx (kg)</label>
-                                <input type="number" id="logWeight" step="0.5" min="0" placeholder="Ej: 60" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-600">Reps / Minutos</label>
-                                <input type="number" id="logReps" min="1" placeholder="Ej: 12" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
-                            </div>
+                        <textarea id="routineDesc" rows="3" placeholder="Descripción, series, repeticiones y técnica..." class="w-full p-2 bg-gray-50 border rounded" required></textarea>
+                        <input type="url" id="routineImage" placeholder="URL directa de la imagen (Ej: enlace directo de ImgBB)" class="w-full p-2 bg-gray-50 border rounded" required>
+                        <div class="flex gap-2">
+                            <button type="submit" id="btnSubmitForm" class="bg-theme-primary hover-theme-dark text-white px-4 py-2 rounded w-full font-bold transition">Guardar Rutina</button>
+                            <button type="button" id="btnCancelEdit" class="hidden bg-gray-500 text-white px-4 py-2 rounded font-bold">Cancelar</button>
                         </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-600">Fecha</label>
-                            <input type="date" id="logDate" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-600">Notas de sensación (Opcional)</label>
-                            <input type="text" id="logNotes" placeholder="Ej: Subí 5 kg, buena técnica" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1">
-                        </div>
-                        <button type="submit" class="bg-[#2c4c3b] text-white px-4 py-2.5 rounded-lg w-full font-bold text-sm hover:bg-[#1f362a] transition shadow">
-                            + Guardar Resultado
-                        </button>
                     </form>
                 </div>
+
+                <!-- Gestión de Categorías -->
+                <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-6">
+                    <h2 class="text-lg font-bold mb-4 text-theme-primary">🏷️ Grupos / Categorías</h2>
+                    <form id="catForm" class="flex gap-2 mb-4">
+                        <input type="text" id="catName" placeholder="Ej: Pecho, Glúteos, Cardio" class="p-2 bg-gray-50 border rounded w-full text-sm" required>
+                        <button type="submit" class="bg-theme-primary hover-theme-dark text-white px-3 py-2 rounded font-bold text-sm">+</button>
+                    </form>
+                    <ul id="adminCatList" class="space-y-2 text-sm max-h-48 overflow-y-auto pr-2"></ul>
+                </div>
             </div>
 
-            <!-- Panel de Estadísticas y Gráfico (Chart.js) -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-[#e5e0d8] flex flex-col justify-between">
-                <div>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-[#2c4c3b]">📊 Estadísticas de Progreso</h3>
-                            <p class="text-xs text-gray-500">Evolución histórica de carga y rendimiento</p>
-                        </div>
-                        <select id="chartRoutineFilter" class="p-2 bg-[#f4f1ea] border border-[#e5e0d8] rounded-lg text-xs font-bold text-[#2c4c3b]">
-                            <option value="TODAS">Todas las rutinas</option>
-                        </select>
-                    </div>
-
-                    <!-- Tarjetas Resumen (KPIs) -->
-                    <div class="grid grid-cols-3 gap-3 mb-4">
-                        <div class="bg-[#f4f1ea] p-3 rounded-lg border border-[#e5e0d8] text-center">
-                            <span class="block text-[11px] font-bold text-gray-500 uppercase">Sesiones</span>
-                            <span id="statTotalSessions" class="text-xl font-extrabold text-[#2c4c3b]">0</span>
-                        </div>
-                        <div class="bg-[#e8ecd7] p-3 rounded-lg border border-[#c1cc99] text-center">
-                            <span class="block text-[11px] font-bold text-[#2c4c3b] uppercase">Récord Peso</span>
-                            <span id="statMaxWeight" class="text-xl font-extrabold text-[#2c4c3b]">0 kg</span>
-                        </div>
-                        <div class="bg-[#f4f1ea] p-3 rounded-lg border border-[#e5e0d8] text-center">
-                            <span class="block text-[11px] font-bold text-gray-500 uppercase">Total Reps/Min</span>
-                            <span id="statTotalReps" class="text-xl font-extrabold text-[#2c4c3b]">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Lienzo del Gráfico -->
-                    <div class="chart-container">
-                        <canvas id="progressChart"></canvas>
+            <!-- Sección de Registro Público de Avances y Estadísticas -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Formulario Público: Registrar Avance -->
+                <div id="logSection" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-theme-primary mb-1">📝 Registrar Avance</h3>
+                        <p class="text-xs text-gray-500 mb-4">Se guardará exclusivamente en el historial de <strong id="logProfileHint">este perfil</strong>.</p>
+                        
+                        <form id="progressForm" class="space-y-3">
+                            <div>
+                                <label class="text-xs font-bold text-gray-600">Rutina o Ejercicio</label>
+                                <select id="logRoutineSelect" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                    <option value="">Cargando rutinas...</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600">Peso Máx (kg)</label>
+                                    <input type="number" id="logWeight" step="0.5" min="0" placeholder="Ej: 45" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600">Reps / Minutos</label>
+                                    <input type="number" id="logReps" min="1" placeholder="Ej: 12" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-600">Fecha</label>
+                                <input type="date" id="logDate" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-600">Notas de sensación (Opcional)</label>
+                                <input type="text" id="logNotes" placeholder="Ej: Subí 2.5 kg, buena técnica" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1">
+                            </div>
+                            <button type="submit" class="bg-theme-primary hover-theme-dark text-white px-4 py-2.5 rounded-lg w-full font-bold text-sm transition shadow">
+                                + Guardar Resultado
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <!-- Últimos 4 registros -->
-                <div class="mt-4 pt-3 border-t border-gray-100">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Últimos registros guardados</h4>
-                    <div id="recentLogsList" class="space-y-1.5 max-h-32 overflow-y-auto text-xs"></div>
+                <!-- Panel de Estadísticas y Gráfico (Chart.js) -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-theme-primary">📊 Estadísticas de Progreso</h3>
+                                <p class="text-xs text-gray-500">Evolución histórica individual</p>
+                            </div>
+                            <select id="chartRoutineFilter" class="p-2 bg-theme-light border border-theme-light rounded-lg text-xs font-bold text-theme-primary">
+                                <option value="TODAS">Todas las rutinas</option>
+                            </select>
+                        </div>
+
+                        <!-- Tarjetas Resumen (KPIs) -->
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
+                                <span class="block text-[11px] font-bold text-gray-500 uppercase">Sesiones</span>
+                                <span id="statTotalSessions" class="text-xl font-extrabold text-theme-primary">0</span>
+                            </div>
+                            <div class="bg-theme-light p-3 rounded-lg border border-theme-light text-center">
+                                <span class="block text-[11px] font-bold text-theme-primary uppercase">Récord Peso</span>
+                                <span id="statMaxWeight" class="text-xl font-extrabold text-theme-primary">0 kg</span>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
+                                <span class="block text-[11px] font-bold text-gray-500 uppercase">Total Reps/Min</span>
+                                <span id="statTotalReps" class="text-xl font-extrabold text-theme-primary">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Lienzo del Gráfico -->
+                        <div class="chart-container">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Últimos registros -->
+                    <div class="mt-4 pt-3 border-t border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Últimos registros guardados</h4>
+                        <div id="recentLogsList" class="space-y-1.5 max-h-32 overflow-y-auto text-xs"></div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Filtros Dinámicos de Rutinas -->
-        <section id="filterContainer" class="flex flex-wrap gap-2 justify-center items-center bg-white p-4 rounded-xl shadow-sm border border-[#e5e0d8]">
-            <span class="text-sm font-bold text-gray-500 mr-2">Rutinas:</span>
-        </section>
+            <!-- Filtros Dinámicos de Rutinas -->
+            <section id="filterContainer" class="flex flex-wrap gap-2 justify-center items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <span class="text-sm font-bold text-gray-500 mr-2">Rutinas:</span>
+            </section>
 
-        <!-- Contenedor de Tarjetas de Rutinas -->
-        <main id="routinesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></main>
+            <!-- Contenedor de Tarjetas de Rutinas -->
+            <main id="routinesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></main>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
         // CREDENCIALES DE FIREBASE
@@ -174,6 +244,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        let currentUserMode = null; // 'sebastian' o 'manuela'
         let isAdmin = false;
         let allRoutines = [];
         let allCategories = [];
@@ -181,10 +252,84 @@
         let currentFilter = 'Todas';
         let progressChartInstance = null;
 
-        // Poner fecha de hoy por defecto en el formulario de avances
+        // Referencias para desuscribir listeners al cambiar de perfil
+        let unsubCategories = null;
+        let unsubRoutines = null;
+        let unsubLogs = null;
+
         document.getElementById('logDate').valueAsDate = new Date();
 
-        // ---------------- AUTENTICACIÓN ----------------
+        // ---------------- SELECCIÓN DE MODO / PERFIL ----------------
+        window.selectProfile = function(mode) {
+            currentUserMode = mode;
+            const body = document.body;
+            const badge = document.getElementById('activeProfileBadge');
+            const greeting = document.getElementById('headerGreeting');
+            const hint = document.getElementById('logProfileHint');
+
+            if (mode === 'manuela') {
+                body.classList.add('theme-manuela');
+                badge.innerText = "✨ Modo Manuela";
+                greeting.innerText = "Entrenamiento de Manuela";
+                hint.innerText = "Manuela";
+            } else {
+                body.classList.remove('theme-manuela');
+                badge.innerText = "⚡ Modo Sebastián";
+                greeting.innerText = "Entrenamiento de Sebastián";
+                hint.innerText = "Sebastián";
+            }
+
+            currentFilter = 'Todas';
+            document.getElementById('profileSelectorScreen').classList.add('hidden');
+            document.getElementById('mainAppContent').classList.remove('hidden');
+
+            // Iniciar carga de datos aislados para este perfil
+            subscribeToProfileData();
+        };
+
+        window.switchProfileModal = function() {
+            document.getElementById('profileSelectorScreen').classList.remove('hidden');
+        };
+
+        function subscribeToProfileData() {
+            // Limpiar listeners anteriores si existían
+            if (unsubCategories) unsubCategories();
+            if (unsubRoutines) unsubRoutines();
+            if (unsubLogs) unsubLogs();
+
+            // 1. Escuchar Categorías del perfil activo
+            const qCat = query(collection(db, "categorias_fit"), where("usuario", "==", currentUserMode));
+            unsubCategories = onSnapshot(qCat, (snapshot) => {
+                allCategories = [];
+                snapshot.forEach(d => allCategories.push({ id: d.id, nombre: d.data().nombre }));
+                allCategories.sort((a,b) => a.nombre.localeCompare(b.nombre));
+                renderCategories();
+                renderRoutines();
+            });
+
+            // 2. Escuchar Rutinas del perfil activo
+            const qRut = query(collection(db, "rutinas"), where("usuario", "==", currentUserMode));
+            unsubRoutines = onSnapshot(qRut, (snapshot) => {
+                allRoutines = [];
+                snapshot.forEach(docSnap => allRoutines.push({ id: docSnap.id, ...docSnap.data() }));
+                // Ordenar por fecha de creación descendente en cliente (evita requerir índices compuestos)
+                allRoutines.sort((a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0));
+                updateRoutineDropdowns();
+                renderRoutines();
+            });
+
+            // 3. Escuchar Avances del perfil activo
+            const qLogs = query(collection(db, "avances"), where("usuario", "==", currentUserMode));
+            unsubLogs = onSnapshot(qLogs, (snapshot) => {
+                allLogs = [];
+                snapshot.forEach(docSnap => allLogs.push({ id: docSnap.id, ...docSnap.data() }));
+                // Ordenar cronológicamente por fechaStr para el gráfico
+                allLogs.sort((a, b) => (a.fechaStr || "").localeCompare(b.fechaStr || ""));
+                renderStatsAndChart();
+            });
+        }
+
+        // ---------------- AUTENTICACIÓN ADMIN ----------------
         document.getElementById('btnLogin').addEventListener('click', () => {
             const email = prompt("Correo Admin:");
             const password = prompt("Contraseña:");
@@ -197,25 +342,22 @@
             document.getElementById('btnLogin').style.display = user ? 'none' : 'block';
             document.getElementById('btnLogout').style.display = user ? 'block' : 'none';
             document.getElementById('adminPanel').style.display = user ? 'grid' : 'none';
-            renderRoutines();
-            renderCategories();
-            renderStatsAndChart();
+            if (currentUserMode) {
+                renderRoutines();
+                renderCategories();
+                renderStatsAndChart();
+            }
         });
 
         // ---------------- CATEGORÍAS (CRUD ADMIN) ----------------
-        onSnapshot(collection(db, "categorias_fit"), (snapshot) => {
-            allCategories = [];
-            snapshot.forEach(doc => allCategories.push({ id: doc.id, nombre: doc.data().nombre }));
-            allCategories.sort((a,b) => a.nombre.localeCompare(b.nombre));
-            renderCategories();
-            renderRoutines();
-        });
-
         document.getElementById('catForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(!isAdmin) return;
+            if(!isAdmin || !currentUserMode) return;
             const input = document.getElementById('catName');
-            await addDoc(collection(db, "categorias_fit"), { nombre: input.value });
+            await addDoc(collection(db, "categorias_fit"), { 
+                nombre: input.value,
+                usuario: currentUserMode
+            });
             input.value = "";
         });
 
@@ -229,14 +371,14 @@
             
             const filterContainer = document.getElementById('filterContainer');
             filterContainer.innerHTML = `<span class="text-sm font-bold text-gray-500 mr-2">Rutinas:</span>
-                <button onclick="filterCategory('Todas')" class="${currentFilter === 'Todas' ? 'bg-[#2c4c3b] text-white' : 'bg-gray-200 text-gray-700'} px-3 py-1 rounded-full text-sm font-semibold transition">Todas</button>`;
+                <button onclick="filterCategory('Todas')" class="${currentFilter === 'Todas' ? 'bg-theme-primary text-white' : 'bg-gray-200 text-gray-700'} px-3 py-1 rounded-full text-sm font-semibold transition">Todas</button>`;
             
             const adminList = document.getElementById('adminCatList');
             adminList.innerHTML = '';
 
             allCategories.forEach(c => {
                 select.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
-                const isSelected = currentFilter === c.nombre ? 'bg-[#2c4c3b] text-white' : 'bg-gray-200 text-gray-700 hover:bg-[#e8ecd7]';
+                const isSelected = currentFilter === c.nombre ? 'bg-theme-primary text-white' : 'bg-gray-200 text-gray-700 hover:opacity-80';
                 filterContainer.innerHTML += `<button onclick="filterCategory('${c.nombre}')" class="${isSelected} px-3 py-1 rounded-full text-sm font-semibold transition">${c.nombre}</button>`;
                 if(isAdmin) {
                     adminList.innerHTML += `<li class="flex justify-between items-center bg-gray-50 p-2 rounded border">
@@ -255,13 +397,14 @@
         // ---------------- RUTINAS (CRUD ADMIN) ----------------
         document.getElementById('routineForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(!isAdmin) return;
+            if(!isAdmin || !currentUserMode) return;
             const editId = document.getElementById('editRoutineId').value;
             const data = {
                 nombre: document.getElementById('routineName').value,
                 categoria: document.getElementById('routineCategory').value,
                 descripcion: document.getElementById('routineDesc').value,
-                imagen: document.getElementById('routineImage').value
+                imagen: document.getElementById('routineImage').value,
+                usuario: currentUserMode
             };
 
             try {
@@ -284,13 +427,6 @@
             document.getElementById('btnSubmitForm').innerText = "Guardar Rutina";
             document.getElementById('btnCancelEdit').classList.add('hidden');
         }
-
-        onSnapshot(query(collection(db, "rutinas"), orderBy("fecha", "desc")), (snapshot) => {
-            allRoutines = [];
-            snapshot.forEach(docSnap => allRoutines.push({ id: docSnap.id, ...docSnap.data() }));
-            updateRoutineDropdowns();
-            renderRoutines();
-        });
 
         function updateRoutineDropdowns() {
             const logSelect = document.getElementById('logRoutineSelect');
@@ -317,25 +453,32 @@
 
             const filtered = currentFilter === 'Todas' ? allRoutines : allRoutines.filter(r => r.categoria === currentFilter);
 
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="md:col-span-2 text-center py-10 bg-white rounded-xl border border-gray-200 text-gray-500 text-sm">
+                    Aún no hay rutinas registradas en este perfil. Entra como <strong>Admin</strong> para agregar la primera.
+                </div>`;
+                return;
+            }
+
             filtered.forEach((routine) => {
                 let adminBtns = isAdmin ? `
-                    <div class="flex gap-3 mt-3 pt-2 border-t border-[#e5e0d8]">
+                    <div class="flex gap-3 mt-3 pt-2 border-t border-gray-200">
                         <button onclick="editRoutine('${routine.id}')" class="text-blue-600 text-xs font-bold hover:underline">Editar</button>
                         <button onclick="deleteRoutine('${routine.id}')" class="text-red-600 text-xs font-bold hover:underline">Eliminar</button>
                     </div>` : "";
 
                 container.innerHTML += `
-                    <article class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border border-[#e5e0d8]">
+                    <article class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border border-gray-200">
                         <div class="relative h-52">
                             <img src="${routine.imagen}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x200?text=Rutina+Fit'">
-                            <button onclick="quickLog('${routine.nombre}')" class="absolute bottom-3 right-3 bg-[#2c4c3b] text-white px-3 py-2 rounded-lg text-xs font-bold shadow-lg hover:bg-[#1f362a] transition flex items-center gap-1">
+                            <button onclick="quickLog('${routine.nombre}')" class="absolute bottom-3 right-3 bg-theme-primary hover-theme-dark text-white px-3 py-2 rounded-lg text-xs font-bold shadow-lg transition flex items-center gap-1">
                                 ⚡ Registrar avance
                             </button>
                         </div>
                         <div class="p-5 flex-1 flex flex-col">
                             <div class="mb-2">
-                                <span class="bg-[#e8ecd7] text-[#2c4c3b] px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold">${routine.categoria || 'General'}</span>
-                                <h3 class="text-lg font-bold text-[#2c4c3b] leading-tight mt-1">${routine.nombre}</h3>
+                                <span class="bg-theme-light text-theme-primary px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold">${routine.categoria || 'General'}</span>
+                                <h3 class="text-lg font-bold text-theme-primary leading-tight mt-1">${routine.nombre}</h3>
                             </div>
                             <p class="text-gray-600 text-sm whitespace-pre-line flex-1">${routine.descripcion}</p>
                             ${adminBtns}
@@ -344,7 +487,6 @@
             });
         }
 
-        // Botón rápido en tarjeta para preseleccionar rutina en el formulario de avances
         window.quickLog = function(routineName) {
             const select = document.getElementById('logRoutineSelect');
             select.value = routineName;
@@ -373,7 +515,9 @@
         // ---------------- REGISTRO DE AVANCES Y ESTADÍSTICAS ----------------
         document.getElementById('progressForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if(!currentUserMode) return;
             const data = {
+                usuario: currentUserMode,
                 rutina: document.getElementById('logRoutineSelect').value,
                 peso: parseFloat(document.getElementById('logWeight').value),
                 reps: parseInt(document.getElementById('logReps').value),
@@ -398,12 +542,6 @@
             }
         };
 
-        onSnapshot(query(collection(db, "avances"), orderBy("fechaStr", "asc")), (snapshot) => {
-            allLogs = [];
-            snapshot.forEach(docSnap => allLogs.push({ id: docSnap.id, ...docSnap.data() }));
-            renderStatsAndChart();
-        });
-
         document.getElementById('chartRoutineFilter').addEventListener('change', renderStatsAndChart);
 
         function renderStatsAndChart() {
@@ -421,7 +559,7 @@
             document.getElementById('statMaxWeight').innerText = `${maxWeight} kg`;
             document.getElementById('statTotalReps').innerText = totalReps;
 
-            // 2. Renderizar lista de últimos registros (orden inverso: más reciente arriba)
+            // 2. Lista de últimos registros
             const recentList = document.getElementById('recentLogsList');
             recentList.innerHTML = '';
             const reversed = [...filteredLogs].reverse().slice(0, 8);
@@ -436,7 +574,7 @@
                     recentList.innerHTML += `
                         <div class="flex justify-between items-center bg-gray-50 px-3 py-1.5 rounded border border-gray-200">
                             <div>
-                                <span class="font-bold text-[#2c4c3b]">${item.fechaStr}</span> · 
+                                <span class="font-bold text-theme-primary">${item.fechaStr}</span> · 
                                 <span class="font-semibold">${item.rutina}</span>
                                 ${item.notas ? `<span class="text-gray-500 italic">(${item.notas})</span>` : ''}
                             </div>
@@ -447,7 +585,11 @@
                 });
             }
 
-            // 3. Dibujar / Actualizar Gráfico con Chart.js
+            // 3. Colores dinámicos para el gráfico según el perfil activo
+            const computedStyle = getComputedStyle(document.body);
+            const lineColor = computedStyle.getPropertyValue('--chart-line').trim();
+            const fillColor = computedStyle.getPropertyValue('--chart-fill').trim();
+
             const labels = filteredLogs.map(l => `${l.fechaStr} (${l.rutina.substring(0, 12)})`);
             const weightsData = filteredLogs.map(l => l.peso);
             const repsData = filteredLogs.map(l => l.reps);
@@ -465,8 +607,8 @@
                         {
                             label: 'Peso (kg)',
                             data: weightsData,
-                            borderColor: '#2c4c3b',
-                            backgroundColor: 'rgba(44, 76, 59, 0.15)',
+                            borderColor: lineColor,
+                            backgroundColor: fillColor,
                             borderWidth: 3,
                             tension: 0.3,
                             fill: true,
@@ -475,7 +617,7 @@
                         {
                             label: 'Reps / Minutos',
                             data: repsData,
-                            borderColor: '#3b82f6',
+                            borderColor: '#64748b',
                             backgroundColor: 'transparent',
                             borderWidth: 2,
                             borderDash: [5, 5],
