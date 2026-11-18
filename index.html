@@ -687,7 +687,7 @@
                 container.innerHTML += `
                     <article class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border border-gray-200">
                         <div class="relative h-52">
-                            <img src="${routine.imagen}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x200?text=Rutina+Fit'">
+                            <img src="${routine.imagen}" class="w-full h-full object-contain bg-gray-100" onerror="this.src='https://via.placeholder.com/400x200?text=Rutina+Fit'">
                             <button onclick="quickLog('${routine.nombre}')" class="absolute bottom-3 right-3 bg-theme-primary hover-theme-dark text-white px-3 py-2 rounded-lg text-xs font-bold shadow-lg transition flex items-center gap-1">
                                 ⚡ Registrar avance
                             </button>
