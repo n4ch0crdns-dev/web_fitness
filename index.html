@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitácora Fit - Sebastián & Manuela</title>
+    <title>Bitácora Fit - Sebastián & Mahuela</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Variables dinámicas por perfil */
         :root {
             --bg-page: #ecfeff;
             --primary: #0e7490;
@@ -16,10 +15,16 @@
             --primary-border: #67e8f9;
             --nav-text: #ecfeff;
             --chart-line: #0891b2;
-            --chart-fill: rgba(8, 145, 178, 0.15);
+            --chart-fill: rgba(8, 145, 178, 0.2);
+            --heat-0: #f1f5f9;
+            --heat-1: #cffafe;
+            --heat-2: #67e8f9;
+            --heat-3: #22d3ee;
+            --heat-4: #0891b2;
+            --heat-5: #164e63;
         }
 
-        body.theme-manuela {
+        body.theme-mahuela {
             --bg-page: #faf5ff;
             --primary: #7e22ce;
             --primary-dark: #6b21a8;
@@ -27,7 +32,13 @@
             --primary-border: #d8b4fe;
             --nav-text: #faf5ff;
             --chart-line: #9333ea;
-            --chart-fill: rgba(147, 51, 234, 0.15);
+            --chart-fill: rgba(147, 51, 234, 0.2);
+            --heat-0: #f5f3ff;
+            --heat-1: #f3e8ff;
+            --heat-2: #e9d5ff;
+            --heat-3: #d8b4fe;
+            --heat-4: #a855f7;
+            --heat-5: #6b21a8;
         }
 
         body { background-color: var(--bg-page); transition: background-color 0.3s ease; }
@@ -40,12 +51,13 @@
         .border-theme-primary { border-color: var(--primary); }
         .border-theme-light { border-color: var(--primary-border); }
 
-        .chart-container { position: relative; height: 280px; width: 100%; }
+        .chart-container { position: relative; height: 260px; width: 100%; }
+        .radar-container { position: relative; height: 250px; width: 100%; }
     </style>
 </head>
 <body class="text-gray-800 pb-12 font-sans">
 
-    <!-- PANTALLA DE SELECCIÓN DE PERFIL (Antes de entrar) -->
+    <!-- PANTALLA DE SELECCIÓN DE PERFIL -->
     <div id="profileSelectorScreen" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 text-center border border-gray-100">
             <span class="text-4xl mb-2 block">🏋️‍♂️🏋️‍♀️</span>
@@ -53,7 +65,6 @@
             <p class="text-sm text-gray-500 mb-8">Selecciona tu perfil para cargar tus rutinas, colores y estadísticas personales.</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Botón Modo Sebastián -->
                 <button onclick="selectProfile('sebastian')" class="group p-6 rounded-xl border-2 border-cyan-200 bg-cyan-50/60 hover:bg-cyan-600 hover:border-cyan-600 transition-all duration-200 flex flex-col items-center shadow-sm">
                     <div class="w-14 h-14 rounded-full bg-cyan-600 text-white group-hover:bg-white group-hover:text-cyan-700 flex items-center justify-center text-2xl font-bold mb-3 transition">
                         S
@@ -62,21 +73,19 @@
                     <span class="text-xs text-cyan-700 group-hover:text-cyan-100 mt-1">Estilo Cian · Datos propios</span>
                 </button>
 
-                <!-- Botón Modo Manuela -->
                 <button onclick="selectProfile('manuela')" class="group p-6 rounded-xl border-2 border-purple-200 bg-purple-50/70 hover:bg-purple-600 hover:border-purple-600 transition-all duration-200 flex flex-col items-center shadow-sm">
                     <div class="w-14 h-14 rounded-full bg-purple-500 text-white group-hover:bg-white group-hover:text-purple-700 flex items-center justify-center text-2xl font-bold mb-3 transition">
                         M
                     </div>
-                    <span class="text-lg font-bold text-purple-900 group-hover:text-white">Modo Manuela</span>
+                    <span class="text-lg font-bold text-purple-900 group-hover:text-white">Modo Mahuela</span>
                     <span class="text-xs text-purple-700 group-hover:text-purple-100 mt-1">Morado Pastel · Datos propios</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- CONTENIDO PRINCIPAL DE LA APP -->
+    <!-- CONTENIDO PRINCIPAL -->
     <div id="mainAppContent" class="hidden">
-        <!-- Navegación Principal -->
         <nav class="bg-theme-primary text-theme-nav p-4 shadow-lg flex flex-wrap justify-between items-center gap-2 sticky top-0 z-40 transition-colors">
             <div class="flex items-center gap-3">
                 <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">💪 Bitácora Fit</h1>
@@ -91,24 +100,21 @@
             </div>
         </nav>
 
-        <!-- Banner Superior -->
         <header class="text-center py-6 px-4 bg-white shadow-sm border-b border-gray-200">
             <h2 id="headerGreeting" class="text-2xl font-bold text-theme-primary mb-1">Entrenamiento y Evolución</h2>
-            <p class="text-gray-600 text-sm max-w-xl mx-auto">Tus rutinas, registros de carga y estadísticas están aislados en este perfil.</p>
+            <p class="text-gray-600 text-sm max-w-xl mx-auto">Tus rutinas, registros de carga, medidas corporales y estadísticas están aislados en este perfil.</p>
         </header>
 
         <div class="max-w-6xl mx-auto p-4 space-y-6">
 
-            <!-- Panel de Administrador (Solo visible al iniciar sesión) -->
+            <!-- Panel de Administrador -->
             <div id="adminPanel" class="hidden bg-white p-6 rounded-xl shadow-lg border-l-4 border-theme-primary grid md:grid-cols-3 gap-8">
-                
-                <!-- Formulario CRUD de Rutinas -->
                 <div class="md:col-span-2">
                     <h2 id="formTitle" class="text-xl font-bold mb-4 text-theme-primary">🏋️ Crear / Administrar Rutina</h2>
                     <form id="routineForm" class="space-y-4">
                         <input type="hidden" id="editRoutineId" value="">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="routineName" placeholder="Nombre (Ej: Press de Banca / Sentadilla)" class="p-2 bg-gray-50 border rounded w-full" required>
+                            <input type="text" id="routineName" placeholder="Nombre (Ej: Cruce de Poleas / Sentadilla)" class="p-2 bg-gray-50 border rounded w-full" required>
                             <select id="routineCategory" class="p-2 bg-gray-50 border rounded w-full" required></select>
                         </div>
                         <textarea id="routineDesc" rows="3" placeholder="Descripción, series, repeticiones y técnica..." class="w-full p-2 bg-gray-50 border rounded" required></textarea>
@@ -120,7 +126,6 @@
                     </form>
                 </div>
 
-                <!-- Gestión de Categorías -->
                 <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-6">
                     <h2 class="text-lg font-bold mb-4 text-theme-primary">🏷️ Grupos / Categorías</h2>
                     <form id="catForm" class="flex gap-2 mb-4">
@@ -131,10 +136,35 @@
                 </div>
             </div>
 
-            <!-- Sección de Registro Público de Avances y Estadísticas -->
+            <!-- INDICADOR DE RACHAS DE CONSTANCIA SEMANAL -->
+            <section class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-theme-primary flex items-center gap-2">🔥 Constancia Semanal (Últimas 12 Semanas)</h3>
+                        <p class="text-xs text-gray-500">Entre más días entrenes en la semana, más intenso se vuelve el color de la semana.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-theme-light border border-theme-light px-3 py-1.5 rounded-lg text-center">
+                            <span class="text-[10px] font-bold text-theme-primary uppercase block">Racha Actual</span>
+                            <span id="weeklyStreakBadge" class="text-sm font-extrabold text-theme-primary">0 semanas</span>
+                        </div>
+                        <div class="hidden md:flex items-center gap-1 text-[10px] text-gray-500">
+                            <span>Menos</span>
+                            <span class="w-3 h-3 rounded-sm inline-block border border-gray-200" style="background: var(--heat-0)"></span>
+                            <span class="w-3 h-3 rounded-sm inline-block" style="background: var(--heat-1)"></span>
+                            <span class="w-3 h-3 rounded-sm inline-block" style="background: var(--heat-2)"></span>
+                            <span class="w-3 h-3 rounded-sm inline-block" style="background: var(--heat-3)"></span>
+                            <span class="w-3 h-3 rounded-sm inline-block" style="background: var(--heat-4)"></span>
+                            <span class="w-3 h-3 rounded-sm inline-block" style="background: var(--heat-5)"></span>
+                            <span>Más (5+ días)</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="weeklyHeatmapGrid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2"></div>
+            </section>
+
+            <!-- SECCIÓN 1: REGISTRO DE AVANCES Y ESTADÍSTICAS DE FUERZA -->
             <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Formulario Público: Registrar Avance -->
                 <div id="logSection" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-theme-primary mb-1">📝 Registrar Avance</h3>
@@ -150,29 +180,45 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-xs font-bold text-gray-600">Peso Máx (kg)</label>
-                                    <input type="number" id="logWeight" step="0.5" min="0" placeholder="Ej: 45" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                    <input type="number" id="logWeight" step="0.5" min="0" placeholder="Ej: 50" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
                                 </div>
                                 <div>
                                     <label class="text-xs font-bold text-gray-600">Reps / Minutos</label>
                                     <input type="number" id="logReps" min="1" placeholder="Ej: 12" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
                                 </div>
                             </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-600">Fecha</label>
-                                <input type="date" id="logDate" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600">Esfuerzo (RPE 1-10)</label>
+                                    <select id="logRpe" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                        <option value="1">RPE 1 - Muy suave</option>
+                                        <option value="2">RPE 2 - Suave</option>
+                                        <option value="3">RPE 3 - Ligero</option>
+                                        <option value="4">RPE 4 - Moderado bajo</option>
+                                        <option value="5">RPE 5 - Moderado</option>
+                                        <option value="6">RPE 6 - Algo intenso</option>
+                                        <option value="7" selected>RPE 7 - Intenso (3 reps en reserva)</option>
+                                        <option value="8">RPE 8 - Muy intenso (2 reps en reserva)</option>
+                                        <option value="9">RPE 9 - Casi al límite (1 rep en reserva)</option>
+                                        <option value="10">RPE 10 - Esfuerzo máximo / Fallo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-600">Fecha</label>
+                                    <input type="date" id="logDate" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1" required>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-xs font-bold text-gray-600">Notas de sensación (Opcional)</label>
                                 <input type="text" id="logNotes" placeholder="Ej: Subí 2.5 kg, buena técnica" class="p-2 bg-gray-50 border rounded w-full text-sm mt-1">
                             </div>
-                            <button type="submit" class="bg-theme-primary hover-theme-dark text-white px-4 py-2.5 rounded-lg w-full font-bold text-sm transition shadow">
+                            <button type="submit" id="btnSaveLog" class="bg-theme-primary hover-theme-dark text-white px-4 py-2.5 rounded-lg w-full font-bold text-sm transition shadow">
                                 + Guardar Resultado
                             </button>
                         </form>
                     </div>
                 </div>
 
-                <!-- Panel de Estadísticas y Gráfico (Chart.js) -->
                 <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between">
                     <div>
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
@@ -185,7 +231,6 @@
                             </select>
                         </div>
 
-                        <!-- Tarjetas Resumen (KPIs) -->
                         <div class="grid grid-cols-3 gap-3 mb-4">
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
                                 <span class="block text-[11px] font-bold text-gray-500 uppercase">Sesiones</span>
@@ -196,21 +241,130 @@
                                 <span id="statMaxWeight" class="text-xl font-extrabold text-theme-primary">0 kg</span>
                             </div>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-center">
-                                <span class="block text-[11px] font-bold text-gray-500 uppercase">Total Reps/Min</span>
-                                <span id="statTotalReps" class="text-xl font-extrabold text-theme-primary">0</span>
+                                <span class="block text-[11px] font-bold text-gray-500 uppercase">RPE Promedio</span>
+                                <span id="statAvgRpe" class="text-xl font-extrabold text-theme-primary">-</span>
                             </div>
                         </div>
 
-                        <!-- Lienzo del Gráfico -->
                         <div class="chart-container">
                             <canvas id="progressChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Últimos registros -->
                     <div class="mt-4 pt-3 border-t border-gray-100">
                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Últimos registros guardados</h4>
-                        <div id="recentLogsList" class="space-y-1.5 max-h-32 overflow-y-auto text-xs"></div>
+                        <div id="recentLogsList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: GRÁFICO RADAR MUSCULAR Y EVOLUCIÓN CORPORAL -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Gráfico de Radar por Grupo Muscular -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-theme-primary mb-1">🕸️ Distribución Muscular</h3>
+                        <p class="text-xs text-gray-500 mb-3">Equilibrio de sesiones por grupo/categoría</p>
+                        <div class="radar-container">
+                            <canvas id="muscleRadarChart"></canvas>
+                        </div>
+                    </div>
+                    <p id="radarEmptyHint" class="text-[11px] text-gray-400 text-center mt-2">Registra avances en tus rutinas categorizadas para ver tu balance.</p>
+                </div>
+
+                <!-- Evolución Corporal (Altura fija/editable, Peso, Medidas, ICA y Rango Saludable) -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-theme-primary">⚖️ Evolución Corporal y Antropometría</h3>
+                            <p class="text-xs text-gray-500">Altura del perfil, peso corporal, índice cintura-altura (ICA) y rango saludable</p>
+                        </div>
+                        
+                        <!-- Campo fijo / editable de Altura por Perfil -->
+                        <form id="heightForm" class="flex items-center gap-1.5 bg-theme-light border border-theme-light px-3 py-1.5 rounded-lg">
+                            <label for="profileHeightInput" class="text-xs font-bold text-theme-primary whitespace-nowrap">📏 Altura (cm):</label>
+                            <input type="number" id="profileHeightInput" min="100" max="240" step="1" placeholder="Ej: 175" class="w-16 p-1 bg-white border border-gray-300 rounded text-xs font-bold text-center text-gray-800" required>
+                            <button type="submit" id="btnSaveHeight" class="bg-theme-primary hover-theme-dark text-white px-2.5 py-1 rounded text-xs font-bold transition">Guardar</button>
+                        </form>
+                    </div>
+
+                    <!-- Tarjetas Resumen Antropométricas (Peso, Rango Saludable, ICA) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <span class="block text-[10px] font-bold text-gray-500 uppercase">Peso Actual</span>
+                            <span id="currentBodyWeight" class="text-lg font-extrabold text-theme-primary">-</span>
+                            <span id="currentBmiText" class="block text-[11px] text-gray-500 mt-0.5">Registra altura y peso</span>
+                        </div>
+                        <div class="bg-theme-light p-3 rounded-lg border border-theme-light">
+                            <span class="block text-[10px] font-bold text-theme-primary uppercase">Rango Peso Saludable</span>
+                            <span id="healthyWeightRange" class="text-lg font-extrabold text-theme-primary">-</span>
+                            <span class="block text-[11px] text-theme-primary/80 mt-0.5">Referencia IMC 18.5 – 24.9</span>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <span class="block text-[10px] font-bold text-gray-500 uppercase">Índice Cintura-Altura (ICA)</span>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span id="icaValue" class="text-lg font-extrabold text-theme-primary">-</span>
+                                <span id="icaBadge" class="hidden px-2 py-0.5 rounded text-[10px] font-bold"></span>
+                            </div>
+                            <span class="block text-[11px] text-gray-500 mt-0.5">Ideal: menor a 0.50</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <!-- Formulario Medidas -->
+                        <form id="bodyForm" class="space-y-2.5 bg-gray-50 p-3.5 rounded-lg border border-gray-200">
+                            <div>
+                                <label class="text-[11px] font-bold text-gray-600">Fecha de control</label>
+                                <input type="date" id="bodyDate" class="p-1.5 bg-white border rounded w-full text-xs mt-0.5" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[11px] font-bold text-gray-600">Peso (kg)</label>
+                                    <input type="number" id="bodyWeight" step="0.1" min="20" placeholder="Ej: 72.5" class="p-1.5 bg-white border rounded w-full text-xs mt-0.5" required>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-gray-600">Cintura (cm)</label>
+                                    <input type="number" id="bodyWaist" step="0.5" min="30" placeholder="Ej: 80" class="p-1.5 bg-white border rounded w-full text-xs mt-0.5">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[11px] font-bold text-gray-600">Brazo (cm)</label>
+                                    <input type="number" id="bodyArm" step="0.5" min="15" placeholder="Opcional" class="p-1.5 bg-white border rounded w-full text-xs mt-0.5">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-gray-600">Cadera/Pierna</label>
+                                    <input type="number" id="bodyHip" step="0.5" min="30" placeholder="Opcional" class="p-1.5 bg-white border rounded w-full text-xs mt-0.5">
+                                </div>
+                            </div>
+                            <button type="submit" id="btnSaveBody" class="bg-theme-primary hover-theme-dark text-white px-3 py-2 rounded w-full font-bold text-xs transition">
+                                + Guardar Medición
+                            </button>
+                        </form>
+
+                        <!-- Gráfico y Tabla de Evolución Corporal -->
+                        <div class="md:col-span-2 flex flex-col gap-3">
+                            <div class="h-44 w-full relative">
+                                <canvas id="bodyChart"></canvas>
+                            </div>
+                            <div class="overflow-x-auto max-h-28 border border-gray-200 rounded-lg">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-gray-100 text-gray-600 font-bold border-b">
+                                        <tr>
+                                            <th class="p-2">Fecha</th>
+                                            <th class="p-2">Peso</th>
+                                            <th class="p-2">Cintura</th>
+                                            <th class="p-2">ICA</th>
+                                            <th class="p-2">Brazo</th>
+                                            <th class="p-2">Cadera/Pierna</th>
+                                            <th class="p-2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bodyTableBody" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -227,10 +381,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+        import { initializeFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
-        // CREDENCIALES DE FIREBASE
+        // CREDENCIALES DEL PROYECTO fitness-base-26e39
         const firebaseConfig = {
             apiKey: "AIzaSyAjmn4GDlhtxVhy4WgFDawiYhJ81-7dpEE",
             authDomain: "fitness-base-26e39.firebaseapp.com",
@@ -241,26 +395,29 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true
+        });
         const auth = getAuth(app);
 
-        let currentUserMode = null; // 'sebastian' o 'manuela'
+        let currentUserMode = null;
+        let currentProfileHeightCm = null;
         let isAdmin = false;
         let allRoutines = [];
         let allCategories = [];
         let allLogs = [];
+        let allBodyLogs = [];
         let currentFilter = 'Todas';
-        let progressChartInstance = null;
 
-        // Referencias para desuscribir listeners al cambiar de perfil
-        let unsubCategories = null;
-        let unsubRoutines = null;
-        let unsubLogs = null;
+        let progressChartInstance = null;
+        let radarChartInstance = null;
+        let bodyChartInstance = null;
 
         document.getElementById('logDate').valueAsDate = new Date();
+        document.getElementById('bodyDate').valueAsDate = new Date();
 
         // ---------------- SELECCIÓN DE MODO / PERFIL ----------------
-        window.selectProfile = function(mode) {
+        window.selectProfile = async function(mode) {
             currentUserMode = mode;
             const body = document.body;
             const badge = document.getElementById('activeProfileBadge');
@@ -268,12 +425,12 @@
             const hint = document.getElementById('logProfileHint');
 
             if (mode === 'manuela') {
-                body.classList.add('theme-manuela');
-                badge.innerText = "✨ Modo Manuela";
-                greeting.innerText = "Entrenamiento de Manuela";
-                hint.innerText = "Manuela";
+                body.classList.add('theme-mahuela');
+                badge.innerText = "✨ Modo Mahuela";
+                greeting.innerText = "Entrenamiento de Mahuela";
+                hint.innerText = "Mahuela";
             } else {
-                body.classList.remove('theme-manuela');
+                body.classList.remove('theme-mahuela');
                 badge.innerText = "⚡ Modo Sebastián";
                 greeting.innerText = "Entrenamiento de Sebastián";
                 hint.innerText = "Sebastián";
@@ -283,50 +440,77 @@
             document.getElementById('profileSelectorScreen').classList.add('hidden');
             document.getElementById('mainAppContent').classList.remove('hidden');
 
-            // Iniciar carga de datos aislados para este perfil
-            subscribeToProfileData();
+            await loadAllProfileData();
         };
 
         window.switchProfileModal = function() {
             document.getElementById('profileSelectorScreen').classList.remove('hidden');
         };
 
-        function subscribeToProfileData() {
-            // Limpiar listeners anteriores si existían
-            if (unsubCategories) unsubCategories();
-            if (unsubRoutines) unsubRoutines();
-            if (unsubLogs) unsubLogs();
+        async function loadAllProfileData() {
+            if (!currentUserMode) return;
+            await Promise.all([
+                fetchProfileSettings(),
+                fetchCategories(),
+                fetchRoutines(),
+                fetchLogs(),
+                fetchBodyLogs()
+            ]);
+            renderBodyEvolution();
+        }
 
-            // 1. Escuchar Categorías del perfil activo
+        async function fetchProfileSettings() {
+            currentProfileHeightCm = null;
+            document.getElementById('profileHeightInput').value = "";
+            try {
+                const snap = await getDoc(doc(db, "perfiles_fit", currentUserMode));
+                if (snap.exists() && snap.data().alturaCm) {
+                    currentProfileHeightCm = parseFloat(snap.data().alturaCm);
+                    document.getElementById('profileHeightInput').value = currentProfileHeightCm;
+                }
+            } catch (e) {
+                console.error("Error leyendo perfil:", e);
+            }
+        }
+
+        async function fetchCategories() {
             const qCat = query(collection(db, "categorias_fit"), where("usuario", "==", currentUserMode));
-            unsubCategories = onSnapshot(qCat, (snapshot) => {
-                allCategories = [];
-                snapshot.forEach(d => allCategories.push({ id: d.id, nombre: d.data().nombre }));
-                allCategories.sort((a,b) => a.nombre.localeCompare(b.nombre));
-                renderCategories();
-                renderRoutines();
-            });
+            const snapshot = await getDocs(qCat);
+            allCategories = [];
+            snapshot.forEach(d => allCategories.push({ id: d.id, nombre: d.data().nombre }));
+            allCategories.sort((a,b) => a.nombre.localeCompare(b.nombre));
+            renderCategories();
+        }
 
-            // 2. Escuchar Rutinas del perfil activo
+        async function fetchRoutines() {
             const qRut = query(collection(db, "rutinas"), where("usuario", "==", currentUserMode));
-            unsubRoutines = onSnapshot(qRut, (snapshot) => {
-                allRoutines = [];
-                snapshot.forEach(docSnap => allRoutines.push({ id: docSnap.id, ...docSnap.data() }));
-                // Ordenar por fecha de creación descendente en cliente (evita requerir índices compuestos)
-                allRoutines.sort((a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0));
-                updateRoutineDropdowns();
-                renderRoutines();
-            });
+            const snapshot = await getDocs(qRut);
+            allRoutines = [];
+            snapshot.forEach(docSnap => allRoutines.push({ id: docSnap.id, ...docSnap.data() }));
+            allRoutines.sort((a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0));
+            updateRoutineDropdowns();
+            renderRoutines();
+            renderMuscleRadar();
+        }
 
-            // 3. Escuchar Avances del perfil activo
+        async function fetchLogs() {
             const qLogs = query(collection(db, "avances"), where("usuario", "==", currentUserMode));
-            unsubLogs = onSnapshot(qLogs, (snapshot) => {
-                allLogs = [];
-                snapshot.forEach(docSnap => allLogs.push({ id: docSnap.id, ...docSnap.data() }));
-                // Ordenar cronológicamente por fechaStr para el gráfico
-                allLogs.sort((a, b) => (a.fechaStr || "").localeCompare(b.fechaStr || ""));
-                renderStatsAndChart();
-            });
+            const snapshot = await getDocs(qLogs);
+            allLogs = [];
+            snapshot.forEach(docSnap => allLogs.push({ id: docSnap.id, ...docSnap.data() }));
+            allLogs.sort((a, b) => (a.fechaStr || "").localeCompare(b.fechaStr || ""));
+            renderStatsAndChart();
+            renderWeeklyStreak();
+            renderMuscleRadar();
+        }
+
+        async function fetchBodyLogs() {
+            const qBody = query(collection(db, "medidas_corporales"), where("usuario", "==", currentUserMode));
+            const snapshot = await getDocs(qBody);
+            allBodyLogs = [];
+            snapshot.forEach(docSnap => allBodyLogs.push({ id: docSnap.id, ...docSnap.data() }));
+            allBodyLogs.sort((a, b) => (a.fechaStr || "").localeCompare(b.fechaStr || ""));
+            renderBodyEvolution();
         }
 
         // ---------------- AUTENTICACIÓN ADMIN ----------------
@@ -346,6 +530,32 @@
                 renderRoutines();
                 renderCategories();
                 renderStatsAndChart();
+                renderBodyEvolution();
+            }
+        });
+
+        // ---------------- GUARDAR ALTURA FIJA / EDITABLE DEL PERFIL ----------------
+        document.getElementById('heightForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserMode) return;
+            const btn = document.getElementById('btnSaveHeight');
+            const val = parseFloat(document.getElementById('profileHeightInput').value);
+            if (!val || val <= 0) return;
+
+            btn.disabled = true;
+            btn.innerText = "...";
+            try {
+                await setDoc(doc(db, "perfiles_fit", currentUserMode), {
+                    alturaCm: val,
+                    actualizadoEn: new Date()
+                }, { merge: true });
+                currentProfileHeightCm = val;
+                renderBodyEvolution();
+            } catch (error) {
+                alert("Error al guardar altura: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Guardar";
             }
         });
 
@@ -359,10 +569,16 @@
                 usuario: currentUserMode
             });
             input.value = "";
+            await fetchCategories();
+            renderMuscleRadar();
         });
 
         window.deleteCategory = async function(id) {
-            if(confirm("¿Eliminar esta categoría?")) await deleteDoc(doc(db, "categorias_fit", id));
+            if(confirm("¿Eliminar esta categoría?")) {
+                await deleteDoc(doc(db, "categorias_fit", id));
+                await fetchCategories();
+                renderMuscleRadar();
+            }
         };
 
         function renderCategories() {
@@ -415,6 +631,7 @@
                     await addDoc(collection(db, "rutinas"), data);
                 }
                 resetForm();
+                await fetchRoutines();
             } catch (error) { alert("Error: " + error.message); }
         });
 
@@ -509,18 +726,93 @@
         };
 
         window.deleteRoutine = async function(id) {
-            if (confirm("¿Eliminar esta rutina?")) await deleteDoc(doc(db, "rutinas", id));
+            if (confirm("¿Eliminar esta rutina?")) {
+                await deleteDoc(doc(db, "rutinas", id));
+                await fetchRoutines();
+            }
         };
 
-        // ---------------- REGISTRO DE AVANCES Y ESTADÍSTICAS ----------------
+        // ---------------- CONSTANCIA SEMANAL (INTENSIDAD DE COLOR) ----------------
+        function getMondayKey(dateObj) {
+            const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            d.setDate(diff);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${dd}`;
+        }
+
+        function renderWeeklyStreak() {
+            const grid = document.getElementById('weeklyHeatmapGrid');
+            grid.innerHTML = '';
+
+            const daysByWeek = {};
+            allLogs.forEach(log => {
+                if (!log.fechaStr) return;
+                const parts = log.fechaStr.split('-');
+                if (parts.length !== 3) return;
+                const dt = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                const monKey = getMondayKey(dt);
+                if (!daysByWeek[monKey]) daysByWeek[monKey] = new Set();
+                daysByWeek[monKey].add(log.fechaStr);
+            });
+
+            const today = new Date();
+            const currentMondayStr = getMondayKey(today);
+            const curParts = currentMondayStr.split('-');
+            const currentMonday = new Date(parseInt(curParts[0]), parseInt(curParts[1]) - 1, parseInt(curParts[2]));
+
+            const weeksList = [];
+            for (let i = 11; i >= 0; i--) {
+                const wDate = new Date(currentMonday);
+                wDate.setDate(currentMonday.getDate() - (i * 7));
+                const wKey = getMondayKey(wDate);
+                const daysCount = daysByWeek[wKey] ? daysByWeek[wKey].size : 0;
+                const label = `${String(wDate.getDate()).padStart(2, '0')}/${String(wDate.getMonth() + 1).padStart(2, '0')}`;
+                weeksList.push({ key: wKey, label, daysCount, isCurrent: i === 0 });
+            }
+
+            let streak = 0;
+            for (let i = weeksList.length - 1; i >= 0; i--) {
+                if (weeksList[i].daysCount > 0) {
+                    streak++;
+                } else if (i !== weeksList.length - 1) {
+                    break;
+                }
+            }
+            document.getElementById('weeklyStreakBadge').innerText = `${streak} ${streak === 1 ? 'semana' : 'semanas'}`;
+
+            weeksList.forEach(w => {
+                const level = Math.min(w.daysCount, 5);
+                const textColor = level >= 4 ? 'text-white' : 'text-gray-700';
+                const ringClass = w.isCurrent ? 'ring-2 ring-offset-1 ring-gray-400' : '';
+
+                grid.innerHTML += `
+                    <div title="Semana del ${w.label}: ${w.daysCount} día(s) entrenados"
+                         style="background-color: var(--heat-${level});"
+                         class="p-2 rounded-lg border border-gray-200/70 text-center transition-all ${textColor} ${ringClass}">
+                        <span class="block text-[10px] opacity-80">${w.label}</span>
+                        <span class="block text-sm font-extrabold leading-tight mt-0.5">${w.daysCount}d</span>
+                    </div>`;
+            });
+        }
+
+        // ---------------- REGISTRO DE AVANCES (CON RPE) ----------------
         document.getElementById('progressForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentUserMode) return;
+            const btn = document.getElementById('btnSaveLog');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
             const data = {
                 usuario: currentUserMode,
                 rutina: document.getElementById('logRoutineSelect').value,
                 peso: parseFloat(document.getElementById('logWeight').value),
                 reps: parseInt(document.getElementById('logReps').value),
+                rpe: parseInt(document.getElementById('logRpe').value),
                 fechaStr: document.getElementById('logDate').value,
                 notas: document.getElementById('logNotes').value || "",
                 creadoEn: new Date()
@@ -531,18 +823,31 @@
                 document.getElementById('logWeight').value = "";
                 document.getElementById('logReps').value = "";
                 document.getElementById('logNotes').value = "";
+                await fetchLogs();
             } catch (error) {
                 alert("Error al guardar avance: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "+ Guardar Resultado";
             }
         });
 
         window.deleteLog = async function(id) {
             if (confirm("¿Eliminar este registro de avance?")) {
                 await deleteDoc(doc(db, "avances", id));
+                await fetchLogs();
             }
         };
 
         document.getElementById('chartRoutineFilter').addEventListener('change', renderStatsAndChart);
+
+        function getRpeBadgeHtml(rpe) {
+            if (!rpe) return '';
+            let color = 'bg-emerald-100 text-emerald-800';
+            if (rpe >= 9) color = 'bg-red-100 text-red-800';
+            else if (rpe >= 7) color = 'bg-amber-100 text-amber-800';
+            return `<span class="${color} px-1.5 py-0.5 rounded text-[10px] font-bold ml-1">RPE ${rpe}</span>`;
+        }
 
         function renderStatsAndChart() {
             const selectedRoutine = document.getElementById('chartRoutineFilter').value;
@@ -550,16 +855,18 @@
                 ? allLogs 
                 : allLogs.filter(l => l.rutina === selectedRoutine);
 
-            // 1. Calcular KPIs
             const totalSessions = filteredLogs.length;
             const maxWeight = filteredLogs.reduce((max, item) => item.peso > max ? item.peso : max, 0);
-            const totalReps = filteredLogs.reduce((sum, item) => sum + (item.reps || 0), 0);
+            
+            const logsWithRpe = filteredLogs.filter(l => typeof l.rpe === 'number');
+            const avgRpe = logsWithRpe.length > 0 
+                ? (logsWithRpe.reduce((sum, l) => sum + l.rpe, 0) / logsWithRpe.length).toFixed(1) 
+                : "-";
 
             document.getElementById('statTotalSessions').innerText = totalSessions;
             document.getElementById('statMaxWeight').innerText = `${maxWeight} kg`;
-            document.getElementById('statTotalReps').innerText = totalReps;
+            document.getElementById('statAvgRpe').innerText = avgRpe === "-" ? "-" : `${avgRpe} / 10`;
 
-            // 2. Lista de últimos registros
             const recentList = document.getElementById('recentLogsList');
             recentList.innerHTML = '';
             const reversed = [...filteredLogs].reverse().slice(0, 8);
@@ -572,11 +879,12 @@
                         ? `<button onclick="deleteLog('${item.id}')" class="text-red-500 font-bold ml-2 hover:underline">X</button>` 
                         : '';
                     recentList.innerHTML += `
-                        <div class="flex justify-between items-center bg-gray-50 px-3 py-1.5 rounded border border-gray-200">
-                            <div>
+                        <div class="flex justify-between items-center bg-gray-50 px-3 py-1.5 rounded border border-gray-200 gap-2">
+                            <div class="truncate">
                                 <span class="font-bold text-theme-primary">${item.fechaStr}</span> · 
                                 <span class="font-semibold">${item.rutina}</span>
-                                ${item.notas ? `<span class="text-gray-500 italic">(${item.notas})</span>` : ''}
+                                ${getRpeBadgeHtml(item.rpe)}
+                                ${item.notas ? `<span class="text-gray-500 italic ml-1">(${item.notas})</span>` : ''}
                             </div>
                             <div class="font-bold text-gray-700 whitespace-nowrap">
                                 ${item.peso} kg × ${item.reps} ${delBtn}
@@ -585,7 +893,6 @@
                 });
             }
 
-            // 3. Colores dinámicos para el gráfico según el perfil activo
             const computedStyle = getComputedStyle(document.body);
             const lineColor = computedStyle.getPropertyValue('--chart-line').trim();
             const fillColor = computedStyle.getPropertyValue('--chart-fill').trim();
@@ -595,9 +902,7 @@
             const repsData = filteredLogs.map(l => l.reps);
 
             const ctx = document.getElementById('progressChart').getContext('2d');
-            if (progressChartInstance) {
-                progressChartInstance.destroy();
-            }
+            if (progressChartInstance) progressChartInstance.destroy();
 
             progressChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -635,6 +940,248 @@
                     scales: {
                         x: { ticks: { font: { size: 10 }, maxRotation: 30 } },
                         y: { beginAtZero: true, ticks: { font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // ---------------- GRÁFICO DE RADAR POR GRUPO MUSCULAR ----------------
+        function renderMuscleRadar() {
+            const routineToCategory = {};
+            allRoutines.forEach(r => {
+                routineToCategory[r.nombre] = r.categoria || 'General';
+            });
+
+            const countsByGroup = {};
+            allCategories.forEach(c => {
+                countsByGroup[c.nombre] = 0;
+            });
+
+            allLogs.forEach(log => {
+                const group = routineToCategory[log.rutina] || 'Libre / Otros';
+                countsByGroup[group] = (countsByGroup[group] || 0) + 1;
+            });
+
+            const labels = Object.keys(countsByGroup);
+            const dataValues = Object.values(countsByGroup);
+            const hasData = dataValues.some(v => v > 0);
+
+            document.getElementById('radarEmptyHint').style.display = hasData ? 'none' : 'block';
+
+            const computedStyle = getComputedStyle(document.body);
+            const lineColor = computedStyle.getPropertyValue('--chart-line').trim();
+            const fillColor = computedStyle.getPropertyValue('--chart-fill').trim();
+
+            const ctx = document.getElementById('muscleRadarChart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels.length > 0 ? labels : ['Sin categorías'],
+                    datasets: [{
+                        label: 'Sesiones realizadas',
+                        data: labels.length > 0 ? dataValues : [0],
+                        borderColor: lineColor,
+                        backgroundColor: fillColor,
+                        borderWidth: 2,
+                        pointBackgroundColor: lineColor,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, font: { size: 9 }, backdropColor: 'transparent' },
+                            pointLabels: { font: { size: 11, weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ---------------- EVOLUCIÓN CORPORAL (ALTURA, RANGO SALUDABLE E ICA) ----------------
+        document.getElementById('bodyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserMode) return;
+            const btn = document.getElementById('btnSaveBody');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            const waistVal = document.getElementById('bodyWaist').value;
+            const armVal = document.getElementById('bodyArm').value;
+            const hipVal = document.getElementById('bodyHip').value;
+
+            const data = {
+                usuario: currentUserMode,
+                fechaStr: document.getElementById('bodyDate').value,
+                pesoCorporal: parseFloat(document.getElementById('bodyWeight').value),
+                cintura: waistVal ? parseFloat(waistVal) : null,
+                brazo: armVal ? parseFloat(armVal) : null,
+                cadera: hipVal ? parseFloat(hipVal) : null,
+                creadoEn: new Date()
+            };
+
+            try {
+                await addDoc(collection(db, "medidas_corporales"), data);
+                document.getElementById('bodyWeight').value = "";
+                document.getElementById('bodyWaist').value = "";
+                document.getElementById('bodyArm').value = "";
+                document.getElementById('bodyHip').value = "";
+                await fetchBodyLogs();
+            } catch (error) {
+                alert("Error al guardar medidas: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "+ Guardar Medición";
+            }
+        });
+
+        window.deleteBodyLog = async function(id) {
+            if (confirm("¿Eliminar esta medición corporal?")) {
+                await deleteDoc(doc(db, "medidas_corporales", id));
+                await fetchBodyLogs();
+            }
+        };
+
+        function getIcaStatus(ica) {
+            if (ica < 0.40) return { label: 'Muy delgado', cls: 'bg-blue-100 text-blue-800' };
+            if (ica < 0.50) return { label: 'Saludable', cls: 'bg-emerald-100 text-emerald-800' };
+            if (ica < 0.60) return { label: 'Sobrepeso / Riesgo mod.', cls: 'bg-amber-100 text-amber-800' };
+            return { label: 'Riesgo elevado', cls: 'bg-red-100 text-red-800' };
+        }
+
+        function renderBodyEvolution() {
+            const tbody = document.getElementById('bodyTableBody');
+            tbody.innerHTML = '';
+
+            // 1. Calcular Rango de Peso Saludable Estimado (IMC 18.5 a 24.9) según altura fija del perfil
+            if (currentProfileHeightCm && currentProfileHeightCm > 0) {
+                const heightM = currentProfileHeightCm / 100;
+                const minHealthy = (18.5 * heightM * heightM).toFixed(1);
+                const maxHealthy = (24.9 * heightM * heightM).toFixed(1);
+                document.getElementById('healthyWeightRange').innerText = `${minHealthy} – ${maxHealthy} kg`;
+            } else {
+                document.getElementById('healthyWeightRange').innerText = 'Ingresa altura';
+            }
+
+            // 2. Actualizar Peso Actual, IMC de referencia e Índice Cintura-Altura (ICA)
+            const icaValueEl = document.getElementById('icaValue');
+            const icaBadgeEl = document.getElementById('icaBadge');
+
+            if (allBodyLogs.length > 0) {
+                const latest = allBodyLogs[allBodyLogs.length - 1];
+                document.getElementById('currentBodyWeight').innerText = `${latest.pesoCorporal} kg`;
+
+                if (currentProfileHeightCm && currentProfileHeightCm > 0) {
+                    const heightM = currentProfileHeightCm / 100;
+                    const bmi = (latest.pesoCorporal / (heightM * heightM)).toFixed(1);
+                    document.getElementById('currentBmiText').innerText = `IMC ref: ${bmi}`;
+                } else {
+                    document.getElementById('currentBmiText').innerText = 'Falta altura para IMC';
+                }
+
+                // Buscar el registro más reciente que tenga cintura ingresada
+                const latestWithWaist = [...allBodyLogs].reverse().find(m => m.cintura && m.cintura > 0);
+                if (latestWithWaist && currentProfileHeightCm && currentProfileHeightCm > 0) {
+                    const ica = latestWithWaist.cintura / currentProfileHeightCm;
+                    const status = getIcaStatus(ica);
+                    icaValueEl.innerText = ica.toFixed(2);
+                    icaBadgeEl.innerText = status.label;
+                    icaBadgeEl.className = `px-2 py-0.5 rounded text-[10px] font-bold ${status.cls}`;
+                    icaBadgeEl.classList.remove('hidden');
+                } else {
+                    icaValueEl.innerText = '-';
+                    icaBadgeEl.classList.add('hidden');
+                }
+            } else {
+                document.getElementById('currentBodyWeight').innerText = '-';
+                document.getElementById('currentBmiText').innerText = currentProfileHeightCm ? `Altura: ${currentProfileHeightCm} cm` : 'Registra altura y peso';
+                icaValueEl.innerText = '-';
+                icaBadgeEl.classList.add('hidden');
+            }
+
+            // 3. Renderizar tabla histórica con columna ICA calculada por fila
+            const reversed = [...allBodyLogs].reverse();
+            if (reversed.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-gray-400 italic">Sin mediciones registradas aún.</td></tr>`;
+            } else {
+                reversed.forEach(m => {
+                    const delBtn = isAdmin 
+                        ? `<button onclick="deleteBodyLog('${m.id}')" class="text-red-500 font-bold hover:underline">X</button>` 
+                        : '';
+                    let rowIca = '-';
+                    if (m.cintura && currentProfileHeightCm && currentProfileHeightCm > 0) {
+                        rowIca = (m.cintura / currentProfileHeightCm).toFixed(2);
+                    }
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="p-2 font-bold text-theme-primary whitespace-nowrap">${m.fechaStr}</td>
+                            <td class="p-2 font-semibold">${m.pesoCorporal} kg</td>
+                            <td class="p-2">${m.cintura ? m.cintura + ' cm' : '-'}</td>
+                            <td class="p-2 font-semibold">${rowIca}</td>
+                            <td class="p-2">${m.brazo ? m.brazo + ' cm' : '-'}</td>
+                            <td class="p-2">${m.cadera ? m.cadera + ' cm' : '-'}</td>
+                            <td class="p-2 text-right">${delBtn}</td>
+                        </tr>`;
+                });
+            }
+
+            // 4. Gráfico de Evolución Corporal
+            const computedStyle = getComputedStyle(document.body);
+            const lineColor = computedStyle.getPropertyValue('--chart-line').trim();
+            const fillColor = computedStyle.getPropertyValue('--chart-fill').trim();
+
+            const labels = allBodyLogs.map(m => m.fechaStr);
+            const weightData = allBodyLogs.map(m => m.pesoCorporal);
+            const waistData = allBodyLogs.map(m => m.cintura);
+
+            const ctx = document.getElementById('bodyChart').getContext('2d');
+            if (bodyChartInstance) bodyChartInstance.destroy();
+
+            bodyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Peso Corporal (kg)',
+                            data: weightData,
+                            borderColor: lineColor,
+                            backgroundColor: fillColor,
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 3.5
+                        },
+                        {
+                            label: 'Cintura (cm)',
+                            data: waistData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            tension: 0.3,
+                            spanGaps: true,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 9 } } },
+                        y: { ticks: { font: { size: 10 } } }
                     }
                 }
             });
