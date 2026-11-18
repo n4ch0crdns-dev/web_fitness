@@ -118,7 +118,7 @@
                             <select id="routineCategory" class="p-2 bg-gray-50 border rounded w-full" required></select>
                         </div>
                         <textarea id="routineDesc" rows="3" placeholder="Descripción, series, repeticiones y técnica..." class="w-full p-2 bg-gray-50 border rounded" required></textarea>
-                        <input type="url" id="routineImage" placeholder="URL directa de la imagen (Ej: enlace directo de ImgBB)" class="w-full p-2 bg-gray-50 border rounded" required>
+                        <input type="url" id="routineImage" placeholder="URL directa de la imagen o GIF (Ej: enlace directo de ImgBB)" class="w-full p-2 bg-gray-50 border rounded" required>
                         <div class="flex gap-2">
                             <button type="submit" id="btnSubmitForm" class="bg-theme-primary hover-theme-dark text-white px-4 py-2 rounded w-full font-bold transition">Guardar Rutina</button>
                             <button type="button" id="btnCancelEdit" class="hidden bg-gray-500 text-white px-4 py-2 rounded font-bold">Cancelar</button>
@@ -379,6 +379,15 @@
         </div>
     </div>
 
+    <!-- Mascota flotante exclusiva del Modo Mahuela -->
+    <div id="mahuelaCatWidget" class="hidden fixed bottom-4 right-4 z-40 bg-white/95 backdrop-blur-sm p-2.5 rounded-2xl shadow-xl border-2 border-purple-300 flex flex-col items-center transition-all hover:scale-105">
+        <button onclick="document.getElementById('mahuelaCatWidget').classList.add('hidden')" title="Ocultar gatito" class="self-end text-[10px] font-bold text-purple-400 hover:text-purple-700 leading-none mb-0.5 px-1">
+            ✕
+        </button>
+        <img src="https://i.ibb.co/m5xD4S8z/Cat-Fitness.gif" alt="Gatito entrenando" class="w-24 h-24 object-contain rounded-xl">
+        <span class="text-[10px] font-extrabold text-purple-700 mt-1">¡Tú puedes, Mahuela! 💪🐱</span>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
         import { initializeFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
@@ -423,17 +432,20 @@
             const badge = document.getElementById('activeProfileBadge');
             const greeting = document.getElementById('headerGreeting');
             const hint = document.getElementById('logProfileHint');
+            const catWidget = document.getElementById('mahuelaCatWidget');
 
             if (mode === 'manuela') {
                 body.classList.add('theme-mahuela');
                 badge.innerText = "✨ Modo Mahuela";
                 greeting.innerText = "Entrenamiento de Mahuela";
                 hint.innerText = "Mahuela";
+                catWidget.classList.remove('hidden');
             } else {
                 body.classList.remove('theme-mahuela');
                 badge.innerText = "⚡ Modo Sebastián";
                 greeting.innerText = "Entrenamiento de Sebastián";
                 hint.innerText = "Sebastián";
+                catWidget.classList.add('hidden');
             }
 
             currentFilter = 'Todas';
@@ -1061,7 +1073,6 @@
             const tbody = document.getElementById('bodyTableBody');
             tbody.innerHTML = '';
 
-            // 1. Calcular Rango de Peso Saludable Estimado (IMC 18.5 a 24.9) según altura fija del perfil
             if (currentProfileHeightCm && currentProfileHeightCm > 0) {
                 const heightM = currentProfileHeightCm / 100;
                 const minHealthy = (18.5 * heightM * heightM).toFixed(1);
@@ -1071,7 +1082,6 @@
                 document.getElementById('healthyWeightRange').innerText = 'Ingresa altura';
             }
 
-            // 2. Actualizar Peso Actual, IMC de referencia e Índice Cintura-Altura (ICA)
             const icaValueEl = document.getElementById('icaValue');
             const icaBadgeEl = document.getElementById('icaBadge');
 
@@ -1087,7 +1097,6 @@
                     document.getElementById('currentBmiText').innerText = 'Falta altura para IMC';
                 }
 
-                // Buscar el registro más reciente que tenga cintura ingresada
                 const latestWithWaist = [...allBodyLogs].reverse().find(m => m.cintura && m.cintura > 0);
                 if (latestWithWaist && currentProfileHeightCm && currentProfileHeightCm > 0) {
                     const ica = latestWithWaist.cintura / currentProfileHeightCm;
@@ -1107,7 +1116,6 @@
                 icaBadgeEl.classList.add('hidden');
             }
 
-            // 3. Renderizar tabla histórica con columna ICA calculada por fila
             const reversed = [...allBodyLogs].reverse();
             if (reversed.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-gray-400 italic">Sin mediciones registradas aún.</td></tr>`;
@@ -1133,7 +1141,6 @@
                 });
             }
 
-            // 4. Gráfico de Evolución Corporal
             const computedStyle = getComputedStyle(document.body);
             const lineColor = computedStyle.getPropertyValue('--chart-line').trim();
             const fillColor = computedStyle.getPropertyValue('--chart-fill').trim();
